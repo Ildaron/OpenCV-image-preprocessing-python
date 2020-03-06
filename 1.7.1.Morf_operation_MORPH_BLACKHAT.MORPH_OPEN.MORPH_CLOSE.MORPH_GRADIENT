@@ -1,0 +1,18 @@
+import cv2 
+import numpy as np
+from matplotlib import pyplot as plt
+
+img = img1 = cv2.imread('path.jpg')
+kernel1 = np.ones((10,10),np.uint8)
+kernel2 = np.ones((10,10),np.uint8)
+
+img1 = cv2.morphologyEx(img, cv2.MORPH_BLACKHAT, kernel1)
+img2 = cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel2)
+img3 = cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel2)
+img4 = cv2.morphologyEx(img, cv2.MORPH_GRADIENT, kernel2)
+
+
+cv2.imshow('ImageWindow1', img1)
+cv2.imshow('ImageWindow2', img2)
+cv2.imshow('ImageWindow3', img3)
+cv2.imshow('ImageWindow4', img4)
