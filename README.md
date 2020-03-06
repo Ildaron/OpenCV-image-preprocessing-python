@@ -9,7 +9,7 @@ Shortest versions of python script for image processing with OpenCV
 1.5_Erode_dilate.py - erode and dilate function for image processing,  OpenCV, Python    
 1.6_Gauss_filter.py - Gauss filter, OpenCV, Python    	
 1.7_morf_operation.py - morphological operations, OpenCV, Python    	
-1.7.1_Morf_operation_MORPH_BLACKHAT.MORPH_OPEN.MORPH_CLOSE.MORPH_GRADIENT, different types of morphological operations, OpenCV, Python  	
+1.7.1_Morf_operation_MORPH_BLACKHAT.MORPH_OPEN.MORPH_CLOSE.MORPH_GRADIENT, different types of morphological operations, OpenCV, Python  
 1.8_qualizeHist.py - Histogram Equalization, OpenCV, Python  
 1.9_segmentation.py	- image segmentation, OpenCV, Python  
 1.10_Image_Segmentation_Watershed.py -  Image Segmentation with Watershed Algorithm, OpenCV, Python  
