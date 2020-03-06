@@ -3,8 +3,8 @@ Shortest versions of python script for image processing with OpenCV
 
 1.0_change_size_of_photo.py  - change size of image, OpenCV, Python   
 1.1_Color_In_Range.py - 	for detect color with "color in range" function, OpenCV, Python  
-1.2_edge_detection.py	Up - edge detection, OpenCV, Python 
-
+1.2_edge_detection.py	Up - edge detection, OpenCV, Python  
+1.3__Blurred.py  Gaussian blurring, OpenCV, Python  
 1.4_Thresholding_all_graph_in_one_picture.py	- differents types of Thresholding for image processing, OpenCV, Python  
 1.5_Erode_dilate.py - erode and dilate function for image processing,  OpenCV, Python  
 1.6_Gauss_filter.py - Gauss filter, OpenCV, Python  
