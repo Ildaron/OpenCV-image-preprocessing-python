@@ -14,3 +14,4 @@ Shortest versions of python script for image processing with OpenCV
 1.9_segmentation.py	- image segmentation, OpenCV, Python  
 1.10_Image_Segmentation_Watershed.py -  Image Segmentation with Watershed Algorithm, OpenCV, Python  
 1.11_Filter2D.py	- Filter2D for CNN with different resolution, OpenCV, Python  
+1.12 Template_matching.py
