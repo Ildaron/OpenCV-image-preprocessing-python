@@ -1,167 +1,71 @@
-import gym
-import time
+import cv2
 import numpy as np
-import argparse
-from collections import deque
-from itertools import count
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-import torch.nn.init as init
-import matplotlib.pyplot as plt
-from drawnow import drawnow
+import imutils
+from itertools import product
 
-last_score_plot = []
-avg_score_plot = []
+image = cv2.imread("data_44.jpg")
+scale_percent = 40
+x = int(image.shape[1] * scale_percent / 100)
+y = int(image.shape[0] * scale_percent / 100)
+images=image=cv2.resize(image,(x,y))
 
+image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+ret,image = cv2.threshold(image,195,255,cv2.THRESH_BINARY) #cv2.THRESH_BINARY_INV,cv2.THRESH_TRUNC,cv2.THRESH_TOZERO,cv2.THRESH_TOZERO_INV
 
-import env_shower
-env = env_shower.ShowerEnv()
+kernel = np.ones((6,6),np.uint8)
+image = cv2.erode(image,kernel,iterations = 1)
+kernel_3 = np.ones((8,8),np.uint8)
+image = cv2.dilate(image,kernel_3,iterations = 1)
 
-def draw_fig():
-  plt.ylabel('reward')
-  plt.xlabel('episode')
-  plt.plot(last_score_plot, '-')
-  plt.plot(avg_score_plot, 'r-')
+colorLower = (250, 250, 250)
+colorUpper = (255, 255, 255)
+cnts = cv2.findContours(image.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+lengh_cnts=len(cnts)
+amount_figure= [1.0] *lengh_cnts 
+amount_axeX= [1.0] *lengh_cnts
+amount_axeY= [1.0] *lengh_cnts
 
-
-parser = argparse.ArgumentParser(description='PyTorch A2C solution of CartPole-v0')
-parser.add_argument('--gamma', type=float, default=0.99)
-parser.add_argument('--actor_lr', type=float, default=1e-4)
-parser.add_argument('--critic_lr', type=float, default=5e-4)
-parser.add_argument('--batch_size', type=int, default=64)
-parser.add_argument('--max_episode', type=int, default=500)
-
-cfg = parser.parse_args()
-
-#env = gym.make('CartPole-v0')
-
-
-class Memory(object):
-  def __init__(self, memory_size=10000):
-    self.memory = deque(maxlen=memory_size)
-    self.memory_size = memory_size
-
-  def __len__(self):
-    return len(self.memory)
-
-  def append(self, item):
-    self.memory.append(item)
-
-  def sample_batch(self, batch_size):
-    idx = np.random.permutation(len(self.memory))[:batch_size]
-    return [self.memory[i] for i in idx]
+count=0
+radius_max=[]
+x_max=[]
+y_max=[]
+if cnts is ():
+ print ("none")   
+ cv2.imshow('Vertical', image)
+ key = cv2.waitKey(1) & 0xFF
+else:
+ for c in cnts:    
+  ((x, y), radius) = cv2.minEnclosingCircle(c)
+  radius_max.append(radius)
+  x_max.append(x)
+  y_max.append(y)
+ index = radius_max.index(max(radius_max))
 
 
-class Actor(nn.Module):
-  def __init__(self):
-    super(Actor, self).__init__()
-    self.fc1 = nn.Linear(1, 64)
-    self.fc2 = nn.Linear(64, 2)
-    init.xavier_normal_(self.fc1.weight)
-    init.xavier_normal_(self.fc2.weight)
+ def points_in_circle(radius):
+   
+  for x, y in product(range(int(radius) + 1), repeat=2):
+   if x**2 + y**2 <= radius**2:
+    yield from set(((x, y), (x, -y), (-x, y), (-x, -y),))
+ print (list(points_in_circle(radius_max[1])))
+ #points_in_circle(radius_max[1])
+ 
+ if radius > 0:  
+  cv2.circle(images, (int(x_max[index]), int(y_max[index])), int(radius_max[index]),(100, 0, 255), 2)
+  cv2.circle(image, (int(x_max[index]), int(y_max[index])), int(radius_max[index]),(100, 0, 255), 2)
+  for a in list(points_in_circle(radius_max[1])):
+   #count = cv2.countNonZero
 
-  def forward(self, x):
-    x = F.elu(self.fc1(x))
-    x = F.softmax(self.fc2(x), dim=1)
-    return x
-
-
-class Critic(nn.Module):
-  def __init__(self):
-    super(Critic, self).__init__()
-    self.fc1 = nn.Linear(1, 64)
-    self.fc2 = nn.Linear(64, 1)
-    init.xavier_normal_(self.fc1.weight)
-
-  def forward(self, x):
-    x = F.elu(self.fc1(x))
-    value = self.fc2(x)
-    return value.squeeze()
-
-
-def get_action(state):
-  action_probs = actor(state)
-  action_dist = torch.distributions.Categorical(action_probs)
-  action = action_dist.sample()
-  return action
+   a_x=a[0]+x_max[1]
+   a_y = a[1]+y_max[1] 
+   print ("ok",image[int(a_x),int(a_y)])
+  
+  
+  b=((amount_figure.index(max(amount_figure))))
+   #cv2.putText(image, 'object was found', (int (amount_axeX[b]) , int (amount_axeY[b])), cv2.FONT_ITALIC, 0.4, 255) # # cv2.putText(frame,text,location,font,font size,font color, font weight, line)
+  cv2.imshow("Frame", images)
+  cv2.imshow('Vertical', image)
+  key = cv2.waitKey(1) & 0xFF
 
 
-def get_state_value(state):
-  print ("ok1", len(state))  
-  state_value = critic(state)
-  print ("ok2")
-  return state_value
-
-
-def update_actor(states, actions, advantages):
-  action_probs = actor(states)
-  action_dist = torch.distributions.Categorical(action_probs)
-  act_loss = -action_dist.log_prob(actions) * advantages
-  entropy = action_dist.entropy()
-  loss = torch.mean(act_loss - 1e-4 * entropy)
-  actor_optimizer.zero_grad()
-  loss.backward()
-  actor_optimizer.step()
-  return
-
-
-def update_critic(states, targets):
-  state_value = critic(states)
-  loss = F.mse_loss(state_value, targets)
-  critic_optimizer.zero_grad()
-  loss.backward()
-  critic_optimizer.step()
-  return
-
-
-actor = Actor()
-critic = Critic()
-actor_optimizer = optim.Adam(actor.parameters(), lr=cfg.actor_lr)
-critic_optimizer = optim.Adam(critic.parameters(), lr=cfg.critic_lr)
-memory = Memory(10000)
-
-
-def main():
-  for episode in range(cfg.max_episode):
-    state = env.reset()
-    episode_score = 0
-    start_time = time.perf_counter()
-
-    for episode_steps in count():
-      action = get_action(torch.tensor([state]).float()[None, :]).item()
-      next_state, reward, done, _ = env.step(action)
-
-      memory.append([state, action, next_state, reward, done])
-      state = next_state
-      episode_score += reward
-
-      if len(memory) > cfg.batch_size:
-        states, actions, next_states, rewards, dones = \
-          map(lambda x: torch.tensor(x).float(), zip(*memory.sample_batch(cfg.batch_size)))
-
-        # calculate estimated return
-        targets = rewards + cfg.gamma * get_state_value(next_states).detach() * (1 - dones)
-        td_errors = targets - get_state_value(states).detach()
-
-        update_actor(states=states, actions=actions, advantages=td_errors)
-        update_critic(states, targets)
-
-      if done:
-        print('episode: %d score %.5f, steps %d, (%.2f sec/eps)' %
-              (episode, episode_score, episode_steps, time.perf_counter() - start_time))
-        last_score_plot.append(episode_score)
-        if len(avg_score_plot) == 0:
-          avg_score_plot.append(episode_score)
-        else:
-          avg_score_plot.append(avg_score_plot[-1] * 0.99 + episode_score * 0.01)
-        drawnow(draw_fig)
-        break
-
-  env.close()
-
-
-if __name__ == '__main__':
-  main()
-  plt.pause(0)
+   
