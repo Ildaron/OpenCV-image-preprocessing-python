@@ -23,61 +23,51 @@ edges = cv2.Canny(img,1,2, L2gradient = True)
 #ret,edges = cv2.threshold(edges,200,250,cv2.THRESH_BINARY) #cv2.THRESH_BINARY_INV,cv2.THRESH_TRUNC,cv2.THRESH_TOZERO,cv2.THRESH_TOZERO_INV
 #cv2.imshow("Frame", edges)
 plt.imshow(edges)
-#plt.show()
+plt.show()
 
 contours, _ = cv2.findContours(edges, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
 for i, c in enumerate(contours):
   area = cv2.contourArea(c)
-  img=cv2.drawContours(source, contours, i, (78, 90, 55), 1)
+  img=cv2.drawContours(source, contours, i, (78, 0, 55), 2)
 
 cnts = cv2.findContours(in_range, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+color_blue = (255,0,0)
+color_yellow = (0,255,255)
 
 for c in cnts:  
  ((x, y), radius) = cv2.minEnclosingCircle(c)
  if radius > 10:
   source=cv2.circle(source, (int(x), int(y)), int(radius),(255, 255, 255), 1)
-  source=cv2.circle(source, (int(x), int(y)), 1,(0, 255, 255), 1)
+  source=cv2.circle(source, (int(x), int(y)), 2,(0, 255, 255), 2)
 
+  rect = cv2.minAreaRect(c) # пытаемся вписать прямоугольник
+  box = cv2.boxPoints(rect) # поиск четырех вершин прямоугольника
+  box = np.int0(box) # округление координат
+  center = (int(rect[0][0]),int(rect[0][1]))
+  area = int(rect[1][0]*rect[1][1]) # вычисление площади
 
-
-color_blue = (255,0,0)
-color_yellow = (0,255,255)
-
-for cnt in cnts:  
-        #rect = cv2.minAreaRect(c) # пытаемся вписать прямоугольник
-        #box = cv2.boxPoints(rect) # поиск четырех вершин прямоугольника
-        #box = np.int0(box) # округление координат
-        #cv2.drawContours(source,[box],0,(255,0,0),2) # рисуем прямоугольник
-
-    rect = cv2.minAreaRect(cnt) # пытаемся вписать прямоугольник
-    box = cv2.boxPoints(rect) # поиск четырех вершин прямоугольника
-    box = np.int0(box) # округление координат
-    center = (int(rect[0][0]),int(rect[0][1]))
-    area = int(rect[1][0]*rect[1][1]) # вычисление площади
-
-    # вычисление координат двух векторов, являющихся сторонам прямоугольника
-    edge1 = np.int0((box[1][0] - box[0][0],box[1][1] - box[0][1]))
-    edge2 = np.int0((box[2][0] - box[1][0], box[2][1] - box[1][1]))
+  #вычисление координат двух векторов, являющихся сторонам прямоугольника
+  edge1 = np.int0((box[1][0] - box[0][0],box[1][1] - box[0][1]))
+  edge2 = np.int0((box[2][0] - box[1][0], box[2][1] - box[1][1]))
 
     # выясняем какой вектор больше
-    usedEdge = edge1
-    if cv2.norm(edge2) > cv2.norm(edge1):
-        usedEdge = edge2
-    reference = (1,0) # горизонтальный вектор, задающий горизонт
+  usedEdge = edge1
+  if cv2.norm(edge2) > cv2.norm(edge1):
+   usedEdge = edge2
+  reference = (1,0) # горизонтальный вектор, задающий горизонт
 
     # вычисляем угол между самой длинной стороной прямоугольника и горизонтом
-    angle = 180.0/math.pi * math.acos((reference[0]*usedEdge[0] + reference[1]*usedEdge[1]) / (cv2.norm(reference) *cv2.norm(usedEdge)))
- 
-    if area > 500:
-        cv2.drawContours(img,[box],0,(255,0,0),2) # рисуем прямоугольник
-        cv2.circle(img, center, 5, color_yellow, 2) # рисуем маленький кружок в центре прямоугольника
+  angle = 180.0/math.pi * math.acos((reference[0]*usedEdge[0] + reference[1]*usedEdge[1]) / (cv2.norm(reference) *cv2.norm(usedEdge)))
+  if area > 500:
+   cv2.drawContours(img,[box],0,(255,0,0),2) # рисуем прямоугольник
+   cv2.circle(img, center, 5, (255,0,0), 2) # рисуем маленький кружок в центре прямоугольника
         # выводим в кадр величину угла наклона
-        cv2.putText(img, "%d" % int(angle), (center[0]+20, center[1]-20), 
-                   cv2.FONT_HERSHEY_SIMPLEX, 1, color_yellow, 2)
-
-  
-
-
+   if (center[0]-x>20 and center[1]-y>20):
+    cv2.putText(img, str(round (180-angle,1)), (center[0]+20, center[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 1, color_yellow, 2)
+   else:
+    cv2.putText(img, str(round (angle,1)), (center[0]+20, center[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 1, color_yellow, 2)
 
 plt.imshow(img)
 plt.show()
+print ("finish")
+#https://robotclass.ru/tutorials/opencv-detect-rectangle-angle/
