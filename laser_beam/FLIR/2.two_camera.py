@@ -24,7 +24,7 @@ def main():
     system = PySpin.System.GetInstance()
     version = system.GetLibraryVersion()
     cam_list = system.GetCameras()
-    num_cameras = cam_list.GetSize() #print('Number of cameras detected: %d' % num_cameras)
+    num_cameras = cam_list.GetSize() 
     while 1:
         acquire_and_display_images(cam_list[0],1)
         acquire_and_display_images(cam_list[1],2)
